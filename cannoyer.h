@@ -1,4 +1,5 @@
 #ifndef CANNOYER_H_
+#define CANNOYER_H_
 
 #ifndef RAYLIB_H
 #include "raylib.h"
