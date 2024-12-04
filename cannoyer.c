@@ -1,4 +1,5 @@
 #include "cannoyer.h"
+#include <stdarg.h>
 #include <raylib.h>
 #include <stdlib.h>
 #include <string.h>
@@ -41,7 +42,14 @@ void cannoy_end(void) {
 }
 
 Color* cannoy_set_cols(int n, Color color, ...) {
-
+    Color* colors = malloc(sizeof(Color) * n);
+    va_list ap;
+    va_start(ap, color);
+    for (int i = 0; i < n; ++i) {
+        colors[i] = va_arg(ap, Color);
+    }
+    va_end(ap);
+    return colors;
 }
 
 void cannoy_free_cols(Color* array) {
