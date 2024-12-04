@@ -27,7 +27,7 @@ typedef struct {
     unsigned int delay;
 } cannoy_win_t;
 
-#define cannoy_destroy_win()   (CloseWindow())
+#define cannoy_mode_end()      (CloseWindow())
 #define cannoy_screen_height() (GetScreenHeight())
 #define cannoy_screen_width()  (GetScreenWidth())
 
@@ -42,6 +42,8 @@ extern int _desc_font_sz;
 extern const char* _title;
 extern const char* _name_font_path;
 extern const char* _desc_font_path;
+
+#define cannoy_mode_start()    (InitWindow((_win_width), (_win_height), ("Cannoyer")))
 
 #define CANNOY_TOP_LEFT        (cannoy_win_pos_t){0.0f, 0.0f}
 #define CANNOY_TOP_CENTER      (cannoy_win_pos_t){(float)(cannoy_screen_width()-_win_width)/2, 0.0f}
