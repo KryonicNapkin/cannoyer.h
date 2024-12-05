@@ -28,13 +28,15 @@ typedef struct {
     unsigned int delay;
 } cannoy_win_t;
 
-#define cannoy_mode_end()      (CloseWindow())
 #define cannoy_screen_height() (GetScreenHeight())
 #define cannoy_screen_width()  (GetScreenWidth())
 
 extern unsigned int _delay;
+extern float _flick_interval;
 extern bool _has_cannoy_mode_started;
-extern bool _has_cannoy_mode_stopped;
+extern bool _has_cannoy_mode_ended;
+extern bool _has_rendering_started;
+extern bool _has_rendering_ended;
 extern int _is_win_init;
 extern int _win_width;
 extern int _win_height;
@@ -43,8 +45,6 @@ extern int _desc_font_sz;
 extern const char* _title;
 extern const char* _name_font_path;
 extern const char* _desc_font_path;
-
-#define cannoy_mode_start()    (InitWindow((_win_width), (_win_height), ("Cannoyer")))
 
 #define CANNOY_TOP_LEFT        (cannoy_win_pos_t){0.0f, 0.0f}
 #define CANNOY_TOP_CENTER      (cannoy_win_pos_t){(float)(cannoy_screen_width()-_win_width)/2, 0.0f}
@@ -57,11 +57,14 @@ extern const char* _desc_font_path;
 #define CANNOY_BOTTOM_RIGHT    (cannoy_win_pos_t){(float)cannoy_screen_width()-_win_width, (float)cannoy_screen_height()-_win_height}
 
 void init_annoy_win(cannoy_win_t* win);
-void cannoy_begin(void);
-void cannoy_end(void);
+void cannoy_mode_start(int width, int height, const char* title);
+void cannoy_mode_end(void);
+void cannoy_begin_render(void);
+void cannoy_end_render(void);
 Color* cannoy_set_cols(int n, Color color, ...);
 void cannoy_free_cols(Color* array);
-int cannoy_get_col_idx(void);
+long cannoy_get_cols_len(Color* array);
+int cannoy_get_col_idx(Color* array);
 void cannoy_set_name(cannoy_win_t* win, const char* name);
 void cannoy_set_desc(cannoy_win_t* win, const char* desc);
 void cannoy_set_name_font_sz(cannoy_win_t* win, int font_height);
