@@ -1,11 +1,13 @@
-#include "cannoyer.h"
 #include <stdarg.h>
-#include <raylib.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 
+#include "cannoyer.h"
+#include "raylib.h"
+
 unsigned int _delay = 10000;
+float _flick_interval = 0.25f;
 bool _has_cannoy_mode_started = false;
 bool _has_cannoy_mode_stopped = false;
 bool _has_rendering_started = false;
@@ -19,7 +21,7 @@ const char* _title = "Cannoyer";
 const char* _name_font_path = "IosevkaNerdFont-Bold.ttf";
 const char* _desc_font_path = "IosevkaNerdFont-Bold.ttf";
 
-void init_annoy_win(cannoy_win_t* win) {
+void cannoy_init_win(cannoy_win_t* win) {
     cannoy_set_pos(win, CANNOY_MIDDLE_CENTER);
     cannoy_set_dimensions(win, (cannoy_win_dimensions_t){_win_width, _win_height});
     cannoy_set_name_font(win, _name_font_path, _name_font_sz);
@@ -40,15 +42,15 @@ void cannoy_mode_start(int width, int height, const char* title) {
 
 void cannoy_mode_end(void) {
     CloseWindow();
-    _has_cannoy_mode_ended = true;
+    _has_cannoy_mode_stopped = true;
 }
 
-void cannoy_begin(void) {
+void cannoy_begin_render(void) {
     BeginDrawing();
     _has_rendering_started = true;
 }
 
-void cannoy_end(void) {
+void cannoy_end_render(void) {
     EndDrawing();
     _has_cannoy_mode_stopped = true;
 }
@@ -177,12 +179,12 @@ unsigned int cannoy_get_delay(cannoy_win_t win) {
 }
 
 bool cannoy_is_win_set(cannoy_win_t win) {
-    if (_is_win_init && ) {
+    /* if (_is_win_init && ) {
     
     } else if (!_is_win_init) {
         return false;
     }
-    return false;
+    return false; */
 }
 
 bool cannoy_is_win_running(cannoy_win_t win) {
