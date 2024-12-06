@@ -4,12 +4,11 @@
 #include <stdio.h>
 
 #include "cannoyer.h"
-#include "raylib.h"
 
 unsigned int _delay = 10000;
 float _flick_interval = 0.25f;
 bool _has_cannoy_mode_started = false;
-bool _has_cannoy_mode_stopped = false;
+bool _has_cannoy_mode_ended = false;
 bool _has_rendering_started = false;
 bool _has_rendering_ended = false;
 int _is_win_init = 0;
@@ -20,29 +19,26 @@ int _win_height = 600;
 const char* _title = "Cannoyer";
 const char* _name_font_path = "IosevkaNerdFont-Bold.ttf";
 const char* _desc_font_path = "IosevkaNerdFont-Bold.ttf";
+Color _fg_font_color = RAYWHITE;
 
-void cannoy_init_win(cannoy_win_t* win) {
+void cannoy_init_win(cannoy_win_t* win, int width, int height) {
+    InitWindow(width, height, _title);
     cannoy_set_pos(win, CANNOY_MIDDLE_CENTER);
-    cannoy_set_dimensions(win, (cannoy_win_dimensions_t){_win_width, _win_height});
-    cannoy_set_name_font(win, _name_font_path, _name_font_sz);
     cannoy_set_name_font_sz(win, _name_font_sz);
     cannoy_set_desc_font_sz(win, _desc_font_sz);
+    cannoy_set_name_font(win, _name_font_path, _name_font_sz);
     cannoy_set_desc_font(win, _desc_font_path, _desc_font_sz);
+    cannoy_set_name_font_color(win, _fg_font_color);
+    cannoy_set_desc_font_color(win, _fg_font_color);
     cannoy_set_delay(win, _delay);
     win->is_running = 0;
     _is_win_init = 1;
-}
-
-void cannoy_mode_start(int width, int height, const char* title) {
-    SetConfigFlags(FLAG_WINDOW_TOPMOST | FLAG_WINDOW_UNFOCUSED);
-    InitWindow(width, height, title);
-    SetTargetFPS(60);
     _has_cannoy_mode_started = true;
 }
 
-void cannoy_mode_end(void) {
+void cannoy_destroy_win(void) {
     CloseWindow();
-    _has_cannoy_mode_stopped = true;
+    _has_cannoy_mode_ended = true;
 }
 
 void cannoy_begin_render(void) {
@@ -52,23 +48,25 @@ void cannoy_begin_render(void) {
 
 void cannoy_end_render(void) {
     EndDrawing();
-    _has_cannoy_mode_stopped = true;
+    _has_rendering_ended = true;
 }
 
-Color* cannoy_set_cols(int n, Color color, ...) {
-    Color* colors = malloc(sizeof(Color) * (n + 1));
+Color* cannoy_set_cols(int elements_in_array, ...) {
+    Color* colors = malloc(sizeof(Color) * (elements_in_array + 1));
     va_list ap;
-    va_start(ap, color);
-    for (int i = 0; i < n; ++i) {
+    va_start(ap, elements_in_array);
+    for (int i = 0; i < elements_in_array; ++i) {
         colors[i] = va_arg(ap, Color);
+        printf("%d : %d %d %d %d\n", i, colors[i].a, colors[i].r, colors[i].g, 
+               colors[i].b);
     }
-    colors[n] = (Color){
+    va_end(ap);
+    colors[elements_in_array] = (Color){
         .a = 0,
         .r = 0,
         .g = 0,
         .b = 0
     };
-    va_end(ap);
     return colors;
 }
 
@@ -78,16 +76,16 @@ void cannoy_free_cols(Color* array) {
 
 long cannoy_get_cols_len(Color* array) {
     long length = 0;
-    while ((*array).a != 0 && (*array).r != 0 && (*array).g != 0 && (*array).b != 0) {
-        ++array;
+    while ((*array).a != 0) {
+        array++;
         ++length;
     }
     return length;
 }
 
 int cannoy_get_col_idx(Color* array) {
-    float timer;
-    int update_idx = 0;
+    static float timer = 0;
+    static int update_idx = 0;
     timer += GetFrameTime();
     if (timer >= _flick_interval) {
         update_idx = (update_idx + 1) % cannoy_get_cols_len(array);
@@ -105,30 +103,40 @@ void cannoy_set_desc(cannoy_win_t* win, const char* desc) {
 }
 
 void cannoy_set_name_font_sz(cannoy_win_t* win, int font_height) {
-    win->name_font_sz = font_height;
+    win->name_font.font_size = font_height;
 }
 
 void cannoy_set_desc_font_sz(cannoy_win_t* win, int font_height) {
-    win->desc_font_sz = font_height;
+    win->name_font.font_size = font_height;
 }
 
 void cannoy_set_name_font(cannoy_win_t* win, const char* name_font_path, int height) {
     Font name_font = LoadFontEx(name_font_path, height, NULL, 0);
-    win->name_font = name_font;
+    win->name_font.font = name_font;
 }
 
 void cannoy_set_desc_font(cannoy_win_t* win, const char* desc_font_path, int height) {
     Font desc_font = LoadFontEx(desc_font_path, height, NULL, 0);
-    win->desc_font = desc_font;
+    win->desc_font.font = desc_font;
+}
+
+void cannoy_set_name_font_color(cannoy_win_t* win, Color color) {
+    win->name_font.fg_color = color;
+}
+
+void cannoy_set_desc_font_color(cannoy_win_t* win, Color color) {
+    win->desc_font.fg_color = color;
 }
 
 void cannoy_set_pos(cannoy_win_t* win, cannoy_win_pos_t pos) {
+    SetWindowPosition(pos.x, pos.y);
     win->pos = pos;
 }
 
-void cannoy_set_dimensions(cannoy_win_t* win, cannoy_win_dimensions_t dims) {
+/* void cannoy_set_dimensions(cannoy_win_t* win, cannoy_win_dimensions_t dims) {
+    SetWindowSize(dims.width, dims.height);
     win->dims = dims;
-}
+} */
 
 void cannoy_set_flick_interval(float interval) {
     _flick_interval = interval;
@@ -147,19 +155,19 @@ char* cannoy_get_desc(cannoy_win_t win) {
 }
 
 Font cannoy_get_name_font(cannoy_win_t win) {
-    return win.name_font;
+    return win.name_font.font;
 }
 
 Font cannoy_get_desc_font(cannoy_win_t win) {
-    return win.desc_font;
+    return win.desc_font.font;
 }
 
 int cannoy_get_name_font_sz(cannoy_win_t win) {
-    return win.name_font_sz;
+    return win.name_font.font_size;
 }
 
 int cannoy_get_desc_font_sz(cannoy_win_t win) {
-    return win.desc_font_sz;
+    return win.desc_font.font_size;
 }
 
 cannoy_win_pos_t cannoy_get_pos(cannoy_win_t win) {
@@ -194,25 +202,26 @@ bool cannoy_is_win_running(cannoy_win_t win) {
 void cannoy_render_win(cannoy_win_t win, Color* col_array, int update_idx) {
     if (!_has_cannoy_mode_started) {
         fprintf(stderr, "You must start the cannoy_mode before rendering window!\n");
+        exit(EXIT_FAILURE);
     } 
     if (!_has_rendering_started) {
         fprintf(stderr, "You must start the the cannoy_renderig_mode!\n");
+        exit(EXIT_FAILURE);
     }
-    SetWindowPosition(win.pos.x, win.pos.y);
-    Vector2 text_dim_name = MeasureTextEx(win.name_font, win.name, win.name_font_sz, 0);
+    Vector2 text_dim_name = MeasureTextEx(win.name_font.font, win.name, (float)win.name_font.font_size, 0);
     Vector2 text_pos_name = {
         .x = ((float)win.dims.width/2)-(text_dim_name.x/2),
         .y = ((float)win.dims.height/4)-(text_dim_name.y/2),
     };
-    Vector2 text_dim_desc = MeasureTextEx(win.desc_font, win.desc, win.desc_font_sz, 0);
+    Vector2 text_dim_desc = MeasureTextEx(win.desc_font.font, win.desc, (float)win.desc_font.font_size, 0);
     Vector2 text_pos_desc = {
         .x = ((float)win.dims.width/2)-(text_dim_desc.x/2),
         .y = ((float)win.dims.height*(3.0f/4.0f))-(text_dim_desc.y/2),
     };
     ClearBackground(RAYWHITE);
-    DrawRectangleV((Vector2){win.pos.x, win.pos.y}, (Vector2){win.dims.width, win.dims.height}, col_array[update_idx]);
-    DrawTextEx(win.name_font, win.name, text_pos_name, win.name_font_sz, 0, RAYWHITE);
-    DrawTextEx(win.desc_font, win.desc, text_pos_desc, win.desc_font_sz, 0, RAYWHITE);
+    DrawRectangle(win.pos.x, win.pos.y, win.dims.width, win.dims.height, col_array[update_idx]);
+    DrawTextEx(win.name_font.font, win.name, text_pos_name, (float)win.name_font.font_size, 0, win.name_font.fg_color);
+    DrawTextEx(win.desc_font.font, win.desc, text_pos_desc, (float)win.desc_font.font_size, 0, win.desc_font.fg_color);
 }
 
 char* c_strdup(const char* str) {
