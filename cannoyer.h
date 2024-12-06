@@ -6,6 +6,12 @@
 #endif /* RAYLIB_H */
 
 typedef struct {
+    Font font;
+    int font_size;
+    Color fg_color;
+} complex_font_t;
+
+typedef struct {
     int x;
     int y;
 } cannoy_win_pos_t;
@@ -20,10 +26,8 @@ typedef struct {
     cannoy_win_pos_t pos;
     const char* name;
     const char* desc;
-    Font name_font;
-    int name_font_sz;
-    Font desc_font;
-    int desc_font_sz;
+    complex_font_t name_font;
+    complex_font_t desc_font;
     bool is_running;
     unsigned int delay;
 } cannoy_win_t;
@@ -45,23 +49,23 @@ extern int _desc_font_sz;
 extern const char* _title;
 extern const char* _name_font_path;
 extern const char* _desc_font_path;
+extern Color _fg_font_color;
 
-#define CANNOY_TOP_LEFT        (cannoy_win_pos_t){0.0f, 0.0f}
-#define CANNOY_TOP_CENTER      (cannoy_win_pos_t){(float)(cannoy_screen_width()-_win_width)/2, 0.0f}
-#define CANNOY_TOP_RIGHT       (cannoy_win_pos_t){(float)cannoy_screen_width()-_win_width, 0.0f}
-#define CANNOY_MIDDLE_LEFT     (cannoy_win_pos_t){0.0f, (float)(cannoy_screen_height()-_win_height)/2}
-#define CANNOY_MIDDLE_CENTER   (cannoy_win_pos_t){(float)(cannoy_screen_width()-_win_width)/2, (float)(cannoy_screen_height()-_win_height)/2}
-#define CANNOY_MIDDLE_RIGHT    (cannoy_win_pos_t){(float)cannoy_screen_width()-_win_width, (float)(cannoy_screen_height()-_win_height)/2}
-#define CANNOY_BOTTOM_LEFT     (cannoy_win_pos_t){0.0f, (float)cannoy_screen_height()-_win_height}
-#define CANNOY_BOTTOM_CENTER   (cannoy_win_pos_t){(float)(cannoy_screen_width()-_win_width)/2, (float)cannoy_screen_height()-_win_height}
-#define CANNOY_BOTTOM_RIGHT    (cannoy_win_pos_t){(float)cannoy_screen_width()-_win_width, (float)cannoy_screen_height()-_win_height}
+#define CANNOY_TOP_LEFT        (cannoy_win_pos_t){0, 0}
+#define CANNOY_TOP_CENTER      (cannoy_win_pos_t){(int)(cannoy_screen_width()-_win_width)/2, 0}
+#define CANNOY_TOP_RIGHT       (cannoy_win_pos_t){(int)cannoy_screen_width()-_win_width, 0}
+#define CANNOY_MIDDLE_LEFT     (cannoy_win_pos_t){0, (int)(cannoy_screen_height()-_win_height)/2}
+#define CANNOY_MIDDLE_CENTER   (cannoy_win_pos_t){(int)(cannoy_screen_width()-_win_width)/2, (int)(cannoy_screen_height()-_win_height)/2}
+#define CANNOY_MIDDLE_RIGHT    (cannoy_win_pos_t){(int)cannoy_screen_width()-_win_width, (int)(cannoy_screen_height()-_win_height)/2}
+#define CANNOY_BOTTOM_LEFT     (cannoy_win_pos_t){0, (int)cannoy_screen_height()-_win_height}
+#define CANNOY_BOTTOM_CENTER   (cannoy_win_pos_t){(int)(cannoy_screen_width()-_win_width)/2, (int)cannoy_screen_height()-_win_height}
+#define CANNOY_BOTTOM_RIGHT    (cannoy_win_pos_t){(int)cannoy_screen_width()-_win_width, (int)cannoy_screen_height()-_win_height}
 
-void cannoy_init_win(cannoy_win_t* win);
-void cannoy_mode_start(int width, int height, const char* title);
-void cannoy_mode_end(void);
+void cannoy_init_win(cannoy_win_t* win, int width, int height);
+void cannoy_destroy_win(void);
 void cannoy_begin_render(void);
 void cannoy_end_render(void);
-Color* cannoy_set_cols(int n, Color color, ...);
+Color* cannoy_set_cols(int elements_in_array, ...);
 void cannoy_free_cols(Color* array);
 long cannoy_get_cols_len(Color* array);
 int cannoy_get_col_idx(Color* array);
@@ -71,8 +75,10 @@ void cannoy_set_name_font_sz(cannoy_win_t* win, int font_height);
 void cannoy_set_desc_font_sz(cannoy_win_t* win, int font_height);
 void cannoy_set_name_font(cannoy_win_t* win, const char* name_font_path, int height);
 void cannoy_set_desc_font(cannoy_win_t* win, const char* desc_font_path, int height);
+void cannoy_set_name_font_color(cannoy_win_t* win, Color color);
+void cannoy_set_desc_font_color(cannoy_win_t* win, Color color);
 void cannoy_set_pos(cannoy_win_t* win, cannoy_win_pos_t pos);
-void cannoy_set_dimensions(cannoy_win_t* win, cannoy_win_dimensions_t dims);
+/* void cannoy_set_dimensions(cannoy_win_t* win, cannoy_win_dimensions_t dims); */
 void cannoy_set_flick_interval(float interval);
 void cannoy_set_delay(cannoy_win_t* win, unsigned int delay);
 char* cannoy_get_name(cannoy_win_t win);
