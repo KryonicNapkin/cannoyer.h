@@ -56,7 +56,7 @@ extern const char* _desc_font_path;
 #define CANNOY_BOTTOM_CENTER   (cannoy_win_pos_t){(float)(cannoy_screen_width()-_win_width)/2, (float)cannoy_screen_height()-_win_height}
 #define CANNOY_BOTTOM_RIGHT    (cannoy_win_pos_t){(float)cannoy_screen_width()-_win_width, (float)cannoy_screen_height()-_win_height}
 
-void init_annoy_win(cannoy_win_t* win);
+void cannoy_init_win(cannoy_win_t* win);
 void cannoy_mode_start(int width, int height, const char* title);
 void cannoy_mode_end(void);
 void cannoy_begin_render(void);
