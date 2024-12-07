@@ -1,3 +1,5 @@
+#include <ctype.h>
+#include <raylib.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,23 +23,19 @@ const char* _name_font_path = "IosevkaNerdFont-Bold.ttf";
 const char* _desc_font_path = "IosevkaNerdFont-Bold.ttf";
 Color _fg_font_color = RAYWHITE;
 
-void cannoy_init_win(cannoy_win_t* win, int width, int height) {
-    InitWindow(width, height, _title);
-    cannoy_set_pos(win, CANNOY_MIDDLE_CENTER);
-    cannoy_set_name_font_sz(win, _name_font_sz);
-    cannoy_set_desc_font_sz(win, _desc_font_sz);
-    cannoy_set_name_font(win, _name_font_path, _name_font_sz);
-    cannoy_set_desc_font(win, _desc_font_path, _desc_font_sz);
-    cannoy_set_name_font_color(win, _fg_font_color);
-    cannoy_set_desc_font_color(win, _fg_font_color);
-    cannoy_set_delay(win, _delay);
-    win->is_running = 0;
+void cannoy_init(void) {
+    SetConfigFlags(FLAG_WINDOW_TOPMOST | FLAG_WINDOW_UNFOCUSED | 
+                   FLAG_BORDERLESS_WINDOWED_MODE | FLAG_WINDOW_UNDECORATED | FLAG_MSAA_4X_HINT);
+    InitWindow(_win_width, _win_height, _title);
+    HideCursor();
     _is_win_init = 1;
     _has_cannoy_mode_started = true;
 }
 
-void cannoy_destroy_win(void) {
+void cannoy_destroy_win(cannoy_win_t win) {
     CloseWindow();
+    free(win.name);
+    free(win.desc);
     _has_cannoy_mode_ended = true;
 }
 
@@ -49,6 +47,23 @@ void cannoy_begin_render(void) {
 void cannoy_end_render(void) {
     EndDrawing();
     _has_rendering_ended = true;
+}
+
+cannoy_win_t cannoy_get_default_win(void) {
+    cannoy_win_t win;
+    cannoy_set_pos(&win, CANNOY_MIDDLE_CENTER);
+    win.name = NULL;
+    win.desc = NULL;
+    cannoy_set_dimensions(&win, (cannoy_win_dimensions_t){_win_width, _win_height});
+    win.delay = _delay;
+    cannoy_set_name_font(&win, _name_font_path, _name_font_sz);
+    cannoy_set_desc_font(&win, _desc_font_path, _desc_font_sz);
+    cannoy_set_name_font_sz(&win, _name_font_sz);
+    cannoy_set_desc_font_sz(&win, _desc_font_sz);
+    cannoy_set_name_font_color(&win, WHITE);
+    cannoy_set_desc_font_color(&win, WHITE);
+    win.is_running = false;
+    return win;
 }
 
 Color* cannoy_set_cols(int elements_in_array, ...) {
@@ -133,10 +148,10 @@ void cannoy_set_pos(cannoy_win_t* win, cannoy_win_pos_t pos) {
     win->pos = pos;
 }
 
-/* void cannoy_set_dimensions(cannoy_win_t* win, cannoy_win_dimensions_t dims) {
+void cannoy_set_dimensions(cannoy_win_t* win, cannoy_win_dimensions_t dims) {
     SetWindowSize(dims.width, dims.height);
     win->dims = dims;
-} */
+}
 
 void cannoy_set_flick_interval(float interval) {
     _flick_interval = interval;
@@ -219,7 +234,7 @@ void cannoy_render_win(cannoy_win_t win, Color* col_array, int update_idx) {
         .y = ((float)win.dims.height*(3.0f/4.0f))-(text_dim_desc.y/2),
     };
     ClearBackground(RAYWHITE);
-    DrawRectangle(win.pos.x, win.pos.y, win.dims.width, win.dims.height, col_array[update_idx]);
+    DrawRectangleV((Vector2){0.0f, 0.0f}, (Vector2){(float)win.dims.width, (float)win.dims.height}, col_array[update_idx]);
     DrawTextEx(win.name_font.font, win.name, text_pos_name, (float)win.name_font.font_size, 0, win.name_font.fg_color);
     DrawTextEx(win.desc_font.font, win.desc, text_pos_desc, (float)win.desc_font.font_size, 0, win.desc_font.fg_color);
 }
