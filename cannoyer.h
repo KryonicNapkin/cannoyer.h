@@ -9,7 +9,7 @@ typedef struct {
     Font font;
     int font_size;
     Color fg_color;
-} complex_font_t;
+} cannoy_font_t;
 
 typedef struct {
     int x;
@@ -26,22 +26,23 @@ typedef struct {
     cannoy_win_pos_t pos;
     char* name;
     char* desc;
-    complex_font_t name_font;
-    complex_font_t desc_font;
+    cannoy_font_t name_font;
+    cannoy_font_t desc_font;
     bool is_running;
-    unsigned int delay;
+    float delay;
 } cannoy_win_t;
 
 #define cannoy_screen_width()  (GetMonitorWidth(0))
 #define cannoy_screen_height() (GetMonitorHeight(0))
 
-extern unsigned int _delay;
+extern float _delay;
 extern float _flick_interval;
 extern bool _has_cannoy_mode_started;
 extern bool _has_cannoy_mode_ended;
 extern bool _has_rendering_started;
 extern bool _has_rendering_ended;
-extern int _is_win_init;
+extern bool _is_name_font_loaded;
+extern bool _is_desc_font_loaded;
 extern int _win_width;
 extern int _win_height;
 extern int _name_font_sz;
@@ -50,6 +51,12 @@ extern const char* _title;
 extern const char* _name_font_path;
 extern const char* _desc_font_path;
 extern Color _fg_font_color;
+
+#define CANNOY_LOOP(expr, body) do {   \
+    while (expr) {                     \
+        body;                          \
+    }                                  \
+} while (0)                            \
 
 #define CANNOY_TOP_LEFT        (cannoy_win_pos_t){0, 0}
 #define CANNOY_TOP_CENTER      (cannoy_win_pos_t){(int)(cannoy_screen_width()-GetScreenWidth())/2, 0}
@@ -72,16 +79,16 @@ long cannoy_get_cols_len(Color* array);
 int cannoy_get_col_idx(Color* array);
 void cannoy_set_name(cannoy_win_t* win, const char* name);
 void cannoy_set_desc(cannoy_win_t* win, const char* desc);
-void cannoy_set_name_font_sz(cannoy_win_t* win, int font_height);
-void cannoy_set_desc_font_sz(cannoy_win_t* win, int font_height);
-void cannoy_set_name_font(cannoy_win_t* win, const char* name_font_path, int height);
-void cannoy_set_desc_font(cannoy_win_t* win, const char* desc_font_path, int height);
-void cannoy_set_name_font_color(cannoy_win_t* win, Color color);
-void cannoy_set_desc_font_color(cannoy_win_t* win, Color color);
+cannoy_font_t cannoy_create_font(const char* path, int font_sz, Color font_color);
+void cannoy_set_name_font(cannoy_win_t* win, cannoy_font_t font);
+void cannoy_set_desc_font(cannoy_win_t* win, cannoy_font_t font);
+void cannoy_unload_name_font(cannoy_win_t win);
+void cannoy_unload_desc_font(cannoy_win_t win);
 void cannoy_set_pos(cannoy_win_t* win, cannoy_win_pos_t pos);
 void cannoy_set_dimensions(cannoy_win_t* win, cannoy_win_dimensions_t dims);
 void cannoy_set_flick_interval(float interval);
-void cannoy_set_delay(cannoy_win_t* win, unsigned int delay);
+void cannoy_set_delay(cannoy_win_t* win, float delay);
+int cannoy_delay(float delay);
 char* cannoy_get_name(cannoy_win_t win);
 char* cannoy_get_desc(cannoy_win_t win);
 Font cannoy_get_name_font(cannoy_win_t win);
@@ -91,7 +98,7 @@ int cannoy_get_desc_font_sz(cannoy_win_t win);
 cannoy_win_pos_t cannoy_get_pos(cannoy_win_t win);
 cannoy_win_dimensions_t cannoy_get_dimensions(cannoy_win_t win);
 float cannoy_get_flick_interval(void);
-unsigned int cannoy_get_delay(cannoy_win_t win);
+float cannoy_get_delay(cannoy_win_t win);
 bool cannoy_is_win_set(cannoy_win_t win);
 bool cannoy_is_win_running(cannoy_win_t win);
 void cannoy_render_win(cannoy_win_t win, Color* col_array, int update_idx);
